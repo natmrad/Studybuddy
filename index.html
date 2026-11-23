@@ -317,7 +317,7 @@ const BUDDIES = {
  * Each entry is one D-ID agent. Copy agentId and clientKey from the agent's Embed snippet in D-ID Studio.
  * Realistic buddies appear first in the picker; the cartoon buddies stay as free options and as the fallback. */
 const REAL_BUDDIES = [
-  { id: 'live1', name: '', agentId: 'v2_agt_trFsx6-q', clientKey: 'ck_LjLrWqUKNjzqAI9GD6fyt', voice: 'female' },
+  { id: 'live1', name: 'Mia', agentId: 'v2_agt_trFsx6-q', clientKey: 'ck_LjLrWqUKNjzqAI9GD6fyt', voice: 'female' },
   // Leave name '' to use the agent's name from D-ID.
 ];
 REAL_BUDDIES.forEach(r => {
@@ -326,7 +326,7 @@ REAL_BUDDIES.forEach(r => {
   }
 });
 
-const PAGE_VERSION = '2026-11-23h';
+const PAGE_VERSION = '2026-11-23j';
 const DEMO = !/^https:\/\/script\.google\.com\//.test(API_URL);
 const params = new URLSearchParams(location.search);
 let SID = (params.get('sid') || (() => { try { return localStorage.getItem('studybuddy_sid') || ''; } catch (e) { return ''; } })() || (DEMO ? 'DEMO' : '')).trim();
@@ -589,7 +589,9 @@ function photoHTML(b) {
 const Real = (() => {
   let sdk = null, cur = null, video = null, srcObj = null, connected = false, legacy = false, waiter = null;
   const managers = {};
-  const loadSdk = async () => sdk || (sdk = await import('./did-sdk.js'));
+  // D-ID library from the jsDelivr CDN (pinned version), so no extra file needs uploading.
+  const SDK_URL = 'https://cdn.jsdelivr.net/npm/@d-id/client-sdk@3.0.9/+esm';
+  const loadSdk = async () => sdk || (sdk = await import(SDK_URL));
   const withTimeout = (p, ms, msg) =>
     Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(msg)), ms))]);
 
@@ -632,7 +634,8 @@ const Real = (() => {
   async function loadInfo(b) {
     try {
       const a = (await manager(b)).agent || {};
-      if (b.nameFromAgent && a.name) b.name = String(a.name).split(/\s+/)[0];
+      if (b.nameFromAgent && a.name && !/^(my )?agent$/i.test(a.name)) b.name = String(a.name).split(/\s+/)[0];
+      b.thumb = b.thumb || a.preview_thumbnail || '';
       b.thumb = b.thumb || a.thumbnail || (a.presenter && (a.presenter.thumbnail || a.presenter.source_url)) || '';
       return true;
     } catch (e) {
