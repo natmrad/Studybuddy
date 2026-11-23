@@ -189,6 +189,18 @@ body.real .stage .slot, body.real .video .slot{left:0;bottom:0;transform:none;wi
     <button class="btn btn-ghost" onclick="location.reload()">Try again</button>
   </section>
 
+  <!-- STUDENT CODE -->
+  <section class="screen" id="codeScreen">
+    <div style="font-size:60px;text-align:center;margin-top:40px">👋</div>
+    <h1 class="center">Welcome!</h1>
+    <p class="center muted">Type your student code. Your teacher or parent can give it to you.</p>
+    <input id="codeInput" placeholder="For example S001" autocomplete="off" autocapitalize="characters"
+      style="border:2px solid var(--line);border-radius:16px;padding:16px;font:700 20px 'Nunito',sans-serif;text-align:center;width:100%;margin-top:8px">
+    <p class="center" id="codeErr" style="color:var(--bad);min-height:24px;font-weight:700"></p>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" id="codeBtn">Continue</button>
+  </section>
+
   <!-- WELCOME -->
   <section class="screen" id="welcome">
     <div class="stage">
@@ -288,7 +300,7 @@ body.real .stage .slot, body.real .video .slot{left:0;bottom:0;transform:none;wi
  * Leave it as is to try the app in DEMO mode (1-minute timer, no email).
  * Student link:  index.html?sid=S001
  * ============================================================ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbwLMUQxaPcEHYFehZQpU4zpr0HP1N2oRUiy8YbtBA-b2sMAtJ5pL9efEzgkD038f50-/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxuvyVqjh8lijD0S3a9iSDxDzWvCZRvzQyGszlMwjsbaDuZ9S3hYaphYJ_uyO-eHnuy/exec';
 
 /* The three Study Buddies. Change names, colours or styles here.
  * style: 'long' | 'short' | 'hijab'    voice: 'female' | 'male' */
@@ -314,11 +326,11 @@ REAL_BUDDIES.forEach(r => {
   }
 });
 
-const PAGE_VERSION = '2026-11-23c';
+const PAGE_VERSION = '2026-11-23f';
 const DEMO = !/^https:\/\/script\.google\.com\//.test(API_URL);
 const params = new URLSearchParams(location.search);
-const SID = (params.get('sid') || (DEMO ? 'DEMO' : '')).trim();
-const LS_KEY = 'studybuddy_v1_' + SID;
+let SID = (params.get('sid') || (() => { try { return localStorage.getItem('studybuddy_sid') || ''; } catch (e) { return ''; } })() || (DEMO ? 'DEMO' : '')).trim();
+let LS_KEY = 'studybuddy_v1_' + SID;
 const BUDDY_KEY = 'studybuddy_buddy';
 
 let student = { name: '', studyMinutes: 60, numQuestions: 5 };
@@ -1179,16 +1191,35 @@ $('startBtn').onclick = () => {
 $('answerCallBtn').onclick = () => { ensureAudio(); quizCall(); };
 $('newBtn').onclick = () => { clearState(); $('wName').textContent = student.name; renderPicker(); show('welcome'); };
 
+function askCode(msg) {
+  show('codeScreen');
+  $('codeErr').textContent = msg || '';
+  const go = () => {
+    const v = $('codeInput').value.trim().toUpperCase();
+    if (!v) { $('codeErr').textContent = 'Please type your code.'; return; }
+    const u = new URL(location.href);
+    u.searchParams.set('sid', v);
+    location.href = u.toString();
+  };
+  $('codeBtn').onclick = go;
+  $('codeInput').onkeydown = e => { if (e.key === 'Enter') go(); };
+  setTimeout(() => $('codeInput').focus(), 50);
+}
+
 (async function init() {
   if (DEMO) { const t = document.createElement('div'); t.className = 'demo-tag'; t.textContent = 'DEMO'; document.body.appendChild(t); }
   applyBuddyNames();
-  if (!SID) return fail('Ask your parent or teacher for your personal Study Buddy link.');
+  if (!SID) return askCode();
   if (!SR) $('browserWarn').style.display = 'block';
 
   let r;
   try { r = await jsonp({ action: 'student', sid: SID }); }
   catch (e) { return fail(e.message); }
-  if (!r.ok) return fail(r.error || 'Student not found.');
+  if (!r.ok) {
+    if (!params.get('sid')) { try { localStorage.removeItem('studybuddy_sid'); } catch (e) {} return askCode('That code was not found. Please check it.'); }
+    return fail(r.error || 'Student not found.');
+  }
+  try { localStorage.setItem('studybuddy_sid', SID); } catch (e) {}
   student = { name: r.name, studyMinutes: r.studyMinutes, numQuestions: r.numQuestions };
   $('wName').textContent = student.name;
   $('wMin').textContent = student.studyMinutes + (student.studyMinutes === 1 ? ' minute' : ' minutes');
