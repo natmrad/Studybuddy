@@ -326,7 +326,7 @@ REAL_BUDDIES.forEach(r => {
   }
 });
 
-const PAGE_VERSION = '2026-11-23g';
+const PAGE_VERSION = '2026-11-23h';
 const DEMO = !/^https:\/\/script\.google\.com\//.test(API_URL);
 const params = new URLSearchParams(location.search);
 let SID = (params.get('sid') || (() => { try { return localStorage.getItem('studybuddy_sid') || ''; } catch (e) { return ''; } })() || (DEMO ? 'DEMO' : '')).trim();
@@ -982,7 +982,7 @@ async function openingCall() {
 
   Avatar.setMood('thinking'); setCaption('One moment', true);
   let r;
-  try { r = await jsonp({ action: 'start', sid: SID, subject, topic }); }
+  try { r = await jsonp({ action: 'start', student: SID, subject, topic }); }
   catch (e) { return fail(e.message); }
   if (!r.ok) return fail(r.error || 'Could not start the session.');
   Avatar.setMood('idle');
@@ -1213,7 +1213,7 @@ function askCode(msg) {
   if (!SR) $('browserWarn').style.display = 'block';
 
   let r;
-  try { r = await jsonp({ action: 'student', sid: SID }); }
+  try { r = await jsonp({ action: 'student', student: SID }); }
   catch (e) { return fail(e.message); }
   if (!r.ok) {
     if (!params.get('sid')) { try { localStorage.removeItem('studybuddy_sid'); } catch (e) {} return askCode('That code was not found. Please check it.'); }
