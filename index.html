@@ -300,7 +300,7 @@ body.real .stage .slot, body.real .video .slot{left:0;bottom:0;transform:none;wi
  * Leave it as is to try the app in DEMO mode (1-minute timer, no email).
  * Student link:  index.html?sid=S001
  * ============================================================ */
-const API_URL = 'https://script.google.com/macros/s/AKfycbxuvyVqjh8lijD0S3a9iSDxDzWvCZRvzQyGszlMwjsbaDuZ9S3hYaphYJ_uyO-eHnuy/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbz-CZlFWy74yUkauK5p80npUt2_4IHwo704GL2iTXZ0DfDFFmIsmlg_KgPSijhAmJ--aA/exec';
 
 /* The three Study Buddies. Change names, colours or styles here.
  * style: 'long' | 'short' | 'hijab'    voice: 'female' | 'male' */
@@ -326,7 +326,7 @@ REAL_BUDDIES.forEach(r => {
   }
 });
 
-const PAGE_VERSION = '2026-11-23f';
+const PAGE_VERSION = '2026-11-23g';
 const DEMO = !/^https:\/\/script\.google\.com\//.test(API_URL);
 const params = new URLSearchParams(location.search);
 let SID = (params.get('sid') || (() => { try { return localStorage.getItem('studybuddy_sid') || ''; } catch (e) { return ''; } })() || (DEMO ? 'DEMO' : '')).trim();
